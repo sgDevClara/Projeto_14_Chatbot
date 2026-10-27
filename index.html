@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cardápio do casamento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fundo: #F7F3F6;
+    --papel: #FFFFFF;
+    --tinta: #2A1A2E;
+    --suave: #6B5A6E;
+    --vinho: #5e0931;
+    --salvia: #000000;
+    --linha: #E3D8E1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fundo); color: var(--tinta);
+         font-family: "Bricolage Grotesque", system-ui, sans-serif; line-height: 1.5; }
+  header { padding: 40px 24px 8px; max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -0.03em;
+       margin: 0; line-height: 1.05; color: var(--vinho); }
+  header p { margin: 8px 0 0; color: var(--suave); max-width: 52ch; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px; display: grid;
+         grid-template-columns: 1.3fr 1fr; gap: 24px; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  section { background: var(--papel); border: 1px solid var(--linha); border-radius: 14px; padding: 20px; }
+  h2 { font-size: 1.15rem; margin: 0 0 14px; font-weight: 600; }
+  .coluna { display: flex; flex-direction: column; gap: 24px; }
+
+  form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  form .inteiro { grid-column: 1 / -1; }
+  label { display: grid; gap: 4px; font-size: .85rem; color: var(--suave); }
+  input, select, button { font: inherit; }
+  input, select { padding: 9px 10px; border: 1px solid var(--linha); border-radius: 8px;
+                  background: #fff; color: var(--tinta); }
+  button { cursor: pointer; border: 0; border-radius: 8px; padding: 10px 16px;
+           background: var(--vinho); color: #fff; font-weight: 600; }
+  button.fantasma { background: transparent; color: var(--suave); padding: 4px 8px; font-weight: 400; }
+  button.fantasma:hover { color: var(--vinho); }
+  :focus-visible { outline: 3px solid var(--salvia); outline-offset: 2px; }
+
+  ul { list-style: none; margin: 0; padding: 0; }
+  .convidado { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0;
+               border-top: 1px solid var(--linha); }
+  .convidado:first-child { border-top: 0; }
+  .convidado strong { display: block; }
+  .convidado small { color: var(--suave); }
+  .restricao { display: inline-block; margin-top: 4px; padding: 1px 8px; border-radius: 99px;
+               background: #F3E3E9; color: var(--vinho); font-size: .8rem; }
+  .vazio { color: var(--suave); margin: 0; }
+
+  .grupo { margin-bottom: 16px; }
+  .grupo h3 { font-size: .95rem; margin: 0 0 8px; font-weight: 600; }
+  .barra { display: grid; grid-template-columns: 40px 1fr 28px; gap: 8px; align-items: center; margin-bottom: 6px; font-size: .9rem; }
+  .foto { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; }
+  .foto-grande { width: 100%; height: 90px; object-fit: cover; border-radius: 8px; }
+  .trilho { background: #EFE6EC; border-radius: 6px; height: 26px; position: relative; overflow: hidden; }
+  .preenchimento { background: var(--salvia); height: 100%; border-radius: 6px; transition: width .3s; }
+  .trilho span { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: .85rem; }
+  .numero { text-align: right; font-weight: 600; }
+
+  #mensagens { height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .msg { padding: 8px 12px; border-radius: 12px; max-width: 90%; white-space: pre-wrap; font-size: .95rem; }
+  .msg.user { background: var(--vinho); color: #fff; align-self: flex-end; }
+  .msg.assistant { background: #F1EBF0; align-self: flex-start; }
+  #chat-form { display: flex; gap: 8px; }
+  #chat-form input { flex: 1; }
+  @media (prefers-reduced-motion: reduce) { .preenchimento { transition: none; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Cardápio do casamento</h1>
+  <p>Registre a escolha de cada convidado, acompanhe os totais e peça ajuda ao assistente para fechar as quantidades.</p>
+</header>
+
+<main>
+  <div class="coluna">
+    <section>
+      <h2>Novo convidado</h2>
+      <form id="form-convidado">
+        <label class="inteiro">Nome <input id="nome" required maxlength="80"></label>
+        <label>Entrada <select id="entrada"></select><img id="foto-entrada" class="foto-grande" alt="" hidden></label>
+        <label>Prato principal <select id="principal"></select><img id="foto-principal" class="foto-grande" alt="" hidden></label>
+        <label>Sobremesa <select id="sobremesa"></select><img id="foto-sobremesa" class="foto-grande" alt="" hidden></label>
+        <label>Restrição alimentar <input id="restricao" placeholder="Ex.: sem glúten"></label>
+        <button class="inteiro" type="submit">Adicionar convidado</button>
+      </form>
+    </section>
+    <section>
+      <h2 id="titulo-lista">Convidados</h2>
+      <ul id="lista"></ul>
+    </section>
+  </div>
+
+  <div class="coluna">
+    <section>
+      <h2>Escolhas até agora</h2>
+      <div id="resumo"></div>
+    </section>
+    <section>
+      <h2>Assistente do cardápio</h2>
+      <div id="mensagens" aria-live="polite"></div>
+      <form id="chat-form">
+        <input id="pergunta" placeholder="Quantas porções de cada prato pedir?" required>
+        <button type="submit">Perguntar</button>
+      </form>
+    </section>
+  </div>
+</main>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const ROTULOS = { entrada: "Entrada", principal: "Prato principal", sobremesa: "Sobremesa" };
+let estado = { cardapio: {}, imagens: {}, convidados: [] };
+const historico = [];
+
+function el(tag, props = {}, ...filhos) {
+  const n = document.createElement(tag);
+  Object.assign(n, props);
+  filhos.forEach((f) => n.append(f));
+  return n;
+}
+
+function prever(cat) {
+  const img = $("#foto-" + cat);
+  const arquivo = estado.imagens[$("#" + cat).value];
+  img.src = arquivo ? "/static/img/" + arquivo : "";
+  img.hidden = !arquivo;
+}
+
+async function carregar() {
+  estado = await (await fetch("/api/estado")).json();
+  for (const cat of Object.keys(ROTULOS)) {
+    const sel = $("#" + cat);
+    if (!sel.options.length) estado.cardapio[cat].forEach((o) => sel.add(new Option(o, o)));
+    sel.onchange = () => prever(cat);
+    prever(cat);
+  }
+  desenhar();
+}
+
+function desenhar() {
+  const { convidados, cardapio } = estado;
+
+  $("#titulo-lista").textContent = `Convidados (${convidados.length})`;
+  const lista = $("#lista");
+  lista.replaceChildren();
+  if (!convidados.length) lista.append(el("li", { className: "vazio", textContent: "Nenhum convidado ainda. Adicione o primeiro ao lado." }));
+  convidados.forEach((c) => {
+    const info = el("div", {}, el("strong", { textContent: c.nome }),
+      el("small", { textContent: `${c.entrada} · ${c.principal} · ${c.sobremesa}` }));
+    if (c.restricao) info.append(el("span", { className: "restricao", textContent: c.restricao }));
+    const remover = el("button", { className: "fantasma", textContent: "Remover" });
+    remover.onclick = async () => { await fetch("/api/convidados/" + c.id, { method: "DELETE" }); carregar(); };
+    lista.append(el("li", { className: "convidado" }, info, remover));
+  });
+
+  const resumo = $("#resumo");
+  resumo.replaceChildren();
+  for (const [cat, opcoes] of Object.entries(cardapio)) {
+    const grupo = el("div", { className: "grupo" }, el("h3", { textContent: ROTULOS[cat] }));
+    opcoes.forEach((o) => {
+      const n = convidados.filter((c) => c[cat] === o).length;
+      const pct = convidados.length ? (n / convidados.length) * 100 : 0;
+      const trilho = el("div", { className: "trilho" },
+        el("div", { className: "preenchimento", style: `width:${pct}%` }), el("span", { textContent: o }));
+      const foto = el("img", { className: "foto", alt: o, src: "/static/img/" + (estado.imagens[o] || "") });
+      foto.onerror = () => (foto.style.visibility = "hidden");
+      grupo.append(el("div", { className: "barra" }, foto, trilho, el("div", { className: "numero", textContent: n })));
+    });
+    resumo.append(grupo);
+  }
+}
+
+$("#form-convidado").onsubmit = async (e) => {
+  e.preventDefault();
+  const corpo = { nome: $("#nome").value, restricao: $("#restricao").value };
+  Object.keys(ROTULOS).forEach((cat) => (corpo[cat] = $("#" + cat).value));
+  await fetch("/api/convidados", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) });
+  $("#nome").value = ""; $("#restricao").value = "";
+  carregar();
+};
+
+function mensagem(role, texto) {
+  const box = $("#mensagens");
+  box.append(el("div", { className: "msg " + role, textContent: texto }));
+  box.scrollTop = box.scrollHeight;
+}
+
+$("#chat-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const texto = $("#pergunta").value.trim();
+  if (!texto) return;
+  $("#pergunta").value = "";
+  mensagem("user", texto);
+  historico.push({ role: "user", content: texto });
+  try {
+    const r = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ historico }) });
+    const dados = await r.json();
+    const resposta = dados.texto || dados.erro;
+    mensagem("assistant", resposta);
+    if (dados.texto) historico.push({ role: "assistant", content: dados.texto });
+  } catch {
+    mensagem("assistant", "Falha de conexão com o servidor. Verifique se o app está rodando.");
+  }
+};
+
+carregar();
+</script>
+</body>
+</html>
